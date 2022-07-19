@@ -16,6 +16,7 @@
 
 package wooga.gradle.fastlane
 
+import com.wooga.gradle.test.BatchmodeWrapper
 
 import java.nio.file.Paths
 
@@ -25,14 +26,9 @@ abstract class FastlaneIntegrationSpec extends IntegrationSpec {
     File fastlaneMockPath
 
     def setupFastlaneMock() {
-        fastlaneMockPath = File.createTempDir("fastlane", "mock")
-        fastlaneMock = createFile("fastlane", fastlaneMockPath)
-        fastlaneMock.executable = true
-        fastlaneMock << """
-            #!/usr/bin/env bash
-            echo \$@
-            env
-        """.stripIndent()
+        fastlaneMock = new BatchmodeWrapper("fastlane").withEnvironment(true).toTempFile()
+        fastlaneMockPath = fastlaneMock.parentFile
+
     }
 
     def setup() {
@@ -42,8 +38,6 @@ abstract class FastlaneIntegrationSpec extends IntegrationSpec {
               ${applyPlugin(FastlanePlugin)}
            """.stripIndent()
     }
-
-
 
     // TODO: Replace with newer test API. subStr is an object since we invoke this for any types then discard
     Object substitutePath(Object expectedValue, Object value, String typeName) {
