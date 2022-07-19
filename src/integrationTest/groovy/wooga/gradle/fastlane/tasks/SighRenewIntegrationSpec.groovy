@@ -16,6 +16,8 @@
 
 package wooga.gradle.fastlane.tasks
 
+import com.wooga.gradle.test.BatchmodeWrapper
+import spock.lang.IgnoreIf
 import spock.lang.Issue
 import spock.lang.Requires
 import spock.lang.Unroll
@@ -41,22 +43,20 @@ class SighRenewIntegrationSpec extends AbstractFastlaneTaskIntegrationSpec {
         }
         """.stripIndent()
 
+    @IgnoreIf(value = { instance.class == SighRenewBatchIntegrationSpec && data.property == "appIdentifier" }, reason = "appIdentifier property is not used in SighRenewBatch task")
+    @IgnoreIf(value = { instance.class == SighRenewBatchIntegrationSpec && data.property == "fileName" }, reason = "fileName property is not used in SighRenewBatch task")
     @Unroll("property #property #valueMessage sets flag #expectedCommandlineFlag")
     def "constructs arguments"() {
-        given: "a task to read the build arguments"
-        buildFile << """
-            task("readValue") {
-                doLast {
-                    println("arguments: " + ${getTestTaskName()}.arguments.get().join(" "))
-                }
-            }
-        """.stripIndent()
-
-        and: "a set property"
+        given: "a set property"
         if (method != _) {
             buildFile << """
             ${getTestTaskName()}.${method}($value)
             """.stripIndent()
+        }
+
+        and: "a fix for an unknown file"
+        if (property == "apiKeyPath") {
+            createFile(rawValue.toString())
         }
 
         // TODO: Refactor
@@ -64,10 +64,10 @@ class SighRenewIntegrationSpec extends AbstractFastlaneTaskIntegrationSpec {
         expectedCommandlineFlag = substitutePath(expectedCommandlineFlag, rawValue, type)
 
         when:
-        def result = runTasksSuccessfully("readValue")
+        def result = runTasksSuccessfully(testTaskName)
 
         then:
-        outputContains(result, expectedCommandlineFlag)
+        BatchmodeWrapper.containsArguments(result.standardOutput, expectedCommandlineFlag)
 
         where:
         property                          | method                                | rawValue                   | type           || expectedCommandlineFlag
@@ -86,25 +86,16 @@ class SighRenewIntegrationSpec extends AbstractFastlaneTaskIntegrationSpec {
         "ignoreProfilesWithDifferentName" | "ignoreProfilesWithDifferentName.set" | false                      | "Boolean"      || "--ignore_profiles_with_different_name false"
         "ignoreProfilesWithDifferentName" | _                                     | _                          | "Boolean"      || "--ignore_profiles_with_different_name false"
         "fileName"                        | "fileName.set"                        | "test2.mobileprovisioning" | "String"       || "--filename test2.mobileprovisioning"
-        "destinationDir"                  | "destinationDir.set"                  | "/some/path"               | "File"         || "--output_path /some/path"
+        "destinationDir"                  | "destinationDir.set"                  | "some/path"                | "File"         || "--output_path some/path"
         "additionalArguments"             | "setAdditionalArguments"              | ["--verbose", "--foo bar"] | "List<String>" || "--verbose --foo bar"
-        "apiKeyPath"                      | "apiKeyPath.set"                      | "/path/to/key.json"        | "File"         || "--api-key-path /path/to/key.json"
+        "apiKeyPath"                      | "apiKeyPath.set"                      | "path/to/key.json"         | "File"         || "--api-key-path path/to/key.json"
         value = wrapValueBasedOnType(rawValue, type)
         valueMessage = (rawValue != _) ? "with value ${value}" : "without value"
     }
 
     @Unroll("property #property #valueMessage sets environment #expectedEnvironmentPair")
     def "constructs process environment"() {
-        given: "a task to read the build arguments"
-        buildFile << """
-            task("readValue") {
-                doLast {
-                    println("arguments: " + ${getTestTaskName()}.environment.get().collect {k,v -> k + '=' + v}.join("\\n"))
-                }
-            }
-        """.stripIndent()
-
-        and: "a set property"
+        given: "a set property"
         if (method != _) {
             buildFile << """
             ${getTestTaskName()}.${method}($value)
@@ -112,15 +103,15 @@ class SighRenewIntegrationSpec extends AbstractFastlaneTaskIntegrationSpec {
         }
 
         when:
-        def result = runTasksSuccessfully("readValue")
+        def result = runTasksSuccessfully(testTaskName)
 
         then:
-        outputContains(result, expectedEnvironmentPair)
+        BatchmodeWrapper.containsEnvironment(result.standardOutput, expectedEnvironmentPair)
 
         where:
-        property         | method               | rawValue      | type     || expectedEnvironmentPair
-        "password"       | "password.set"       | "secretValue" | "String" || "FASTLANE_PASSWORD=secretValue"
-        "skip2faUpgrade" | "skip2faUpgrade.set" | true          | "BOLEAN" || "SPACESHIP_SKIP_2FA_UPGRADE=1"
+        property         | method               | rawValue      | type      || expectedEnvironmentPair
+        "password"       | "password.set"       | "secretValue" | "String"  || ["FASTLANE_PASSWORD": "secretValue"]
+        "skip2faUpgrade" | "skip2faUpgrade.set" | true          | "Boolean" || ["SPACESHIP_SKIP_2FA_UPGRADE": "1"]
         value = wrapValueBasedOnType(rawValue, type)
         valueMessage = (rawValue != _) ? "with value ${value}" : "without value"
     }

@@ -29,6 +29,14 @@ pluginBundle {
     tags = ["ios", "fastlane"]
 }
 
+test {
+    useJUnitPlatform()
+}
+
+integrationTest {
+    useJUnitPlatform()
+}
+
 gradlePlugin {
     plugins {
         plugins {
@@ -49,6 +57,8 @@ cveHandler {
 }
 
 dependencies {
-    implementation 'com.wooga.gradle:gradle-commons:[1,2['
-    testImplementation 'com.wooga.gradle:gradle-commons-test:[1,2['
+    implementation 'com.wooga.gradle:gradle-commons:[1.5.1,2['
+    testImplementation 'org.spockframework:spock-junit4:2.1-groovy-2.5'
+    testImplementation 'org.spockframework:spock-core:2.1-groovy-2.5'
+    testImplementation 'com.wooga.gradle:gradle-commons-test:[1.9,2['
 }
