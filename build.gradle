@@ -58,7 +58,7 @@ cveHandler {
 
 dependencies {
     implementation 'com.wooga.gradle:gradle-commons:[1.5.1,2['
-    testImplementation 'org.spockframework:spock-junit4:2.1-groovy-2.5'
+    testImplementation 'org.spockframework:spock-junit4:2.2-groovy-4.0'
     testImplementation 'org.spockframework:spock-core:2.1-groovy-2.5'
     testImplementation 'com.wooga.gradle:gradle-commons-test:[1.9,2['
 }
