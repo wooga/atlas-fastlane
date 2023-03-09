@@ -29,6 +29,13 @@ import static com.wooga.gradle.test.PropertyUtils.envNameFromProperty
 
 class FastlanePluginIntegrationSpec extends FastlaneIntegrationSpec {
 
+    def setup() {
+        buildFile << """
+              group = 'test'
+              ${applyPlugin(FastlanePlugin)}
+           """.stripIndent()
+    }
+
     @Unroll("extension property #property returns '#testValue' if #reason")
     def "extension property returns value"() {
 

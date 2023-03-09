@@ -58,6 +58,21 @@ trait FastLaneSpec extends ExecSpec {
         apiKeyPath.set(value)
     }
 
+    private final Property<String> apiKey = objects.property(String)
+
+    @Internal
+    Property<String> getApiKey() {
+        apiKey
+    }
+
+    void setApiKey(Provider<String> value) {
+        apiKey.set(value)
+    }
+
+    void setApiKey(String value) {
+        apiKey.set(value)
+    }
+
     private final Property<Boolean> skip2faUpgrade = objects.property(Boolean)
 
     @Internal

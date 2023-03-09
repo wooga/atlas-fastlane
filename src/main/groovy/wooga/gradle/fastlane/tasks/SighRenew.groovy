@@ -33,16 +33,27 @@ class SighRenew extends AbstractFastlaneTask implements SighRenewSpec {
             List<String> arguments = new ArrayList<String>()
 
             arguments << "sigh" << "renew"
-
             addDefaultArguments(arguments)
 
-            if (provisioningName.present) {
-                arguments << "--provisioning_name" << provisioningName.get()
-            }
+            addOptionalArgument(arguments, "--provisioning_name", provisioningName)
+            addOptionalArgument(arguments, "--cert_id", certId)
+            addOptionalArgument(arguments, "--cert_owner_name", certOwnerName)
+            addOptionalArgument(arguments, "--platform", platform)
+            addOptionalArgument(arguments, "--template_name", templateName)
 
-            arguments << "--adhoc" << (adhoc.present && adhoc.get()).toString()
-            arguments << "--readonly" << (readOnly.present && readOnly.get()).toString()
-            arguments << "--ignore_profiles_with_different_name" << (ignoreProfilesWithDifferentName.present && ignoreProfilesWithDifferentName.get()).toString()
+            addFlag(arguments, "--adhoc", adhoc)
+            addFlag(arguments, "--development", development)
+            addFlag(arguments, "--skip_install", skipInstall)
+            addFlag(arguments, "--force", force)
+            addFlag(arguments, "--include_mac_in_profiles", includeMacInProfiles)
+            addFlag(arguments, "--readonly", readOnly)
+            addFlag(arguments, "--ignore_profiles_with_different_name", ignoreProfilesWithDifferentName)
+            addFlag(arguments, "--skip_certificate_verification", skipCertificateVerification)
+            addFlag(arguments, "--skip_install", skipInstall)
+            addFlag(arguments, "--skip_fetch_profiles", skipFetchProfiles)
+            addFlag(arguments, "--include_all_certificates", includeAllCertificates)
+            addFlag(arguments, "--fail_on_name_taken", failOnNameTaken)
+
             arguments << "--filename" << fileName.get()
             arguments << "--output_path" << destinationDir.get().asFile.path
 
@@ -56,6 +67,8 @@ class SighRenew extends AbstractFastlaneTask implements SighRenewSpec {
             }
         })
     }
+
+
 
     @Internal
     Provider<RegularFile> getMobileProvisioningProfile() {
