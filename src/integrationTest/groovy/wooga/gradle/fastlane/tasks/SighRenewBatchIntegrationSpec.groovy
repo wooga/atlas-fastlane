@@ -4,12 +4,10 @@ import spock.lang.Requires
 import spock.lang.Unroll
 
 @Requires({ os.macOs })
-class SighRenewBatchIntegrationSpec extends SighRenewIntegrationSpec {
-    String testTaskName = "sighRenewBatch"
-    Class taskType = SighRenewBatch
+class SighRenewBatchIntegrationSpec extends SighRenewBaseIntegrationSpec<SighRenewBatch> {
 
     String workingFastlaneTaskConfig = """
-        task("${testTaskName}", type: ${taskType.name}) {
+        task("${subjectUnderTestName}", type: ${subjectUnderTestTypeName}) {
             appIdentifier = 'test'
             teamId = "fakeTeamId"
             destinationDir = file('build')
@@ -19,14 +17,12 @@ class SighRenewBatchIntegrationSpec extends SighRenewIntegrationSpec {
 
     def "imports multiple profiles"() {
         given: "set multiple profiles"
-        buildFile << """
-        ${testTaskName} {
+        appendToSubjectTask("""
             profiles = ${wrapValueBasedOnType(profiles, "Map<String,String>")}
-        } 
-        """
+        """.stripIndent())
 
         when:
-        def result = runTasksSuccessfully(testTaskName)
+        def result = runTasksSuccessfully(subjectUnderTestName)
 
         then:
         profiles.each { bundleId, profileName ->
@@ -42,16 +38,14 @@ class SighRenewBatchIntegrationSpec extends SighRenewIntegrationSpec {
     @Unroll
     def "imports configured profileName/appIdentifier when set"() {
         given: "set multiple profiles"
-        buildFile << """
-        ${testTaskName} {
+        appendToSubjectTask("""
             profiles = ${wrapValueBasedOnType(profiles, "Map<String,String>")}
             appIdentifier = ${appIdentifier ? wrapValueBasedOnType(appIdentifier, String) : null}
             provisioningName = ${provisioningName ? wrapValueBasedOnType(provisioningName, String) : null}
-        } 
-        """
+        """.stripIndent())
 
         when:
-        def result = runTasksSuccessfully(testTaskName)
+        def result = runTasksSuccessfully(subjectUnderTestName)
 
         then:
         result.standardOutput.contains("import ${expectedProfiles.size()} profiles")

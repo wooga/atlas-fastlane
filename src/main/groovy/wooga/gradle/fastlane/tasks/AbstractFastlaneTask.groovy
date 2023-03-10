@@ -22,6 +22,7 @@ import com.wooga.gradle.io.ProcessExecutor
 import com.wooga.gradle.io.ProcessOutputSpec
 import org.gradle.api.DefaultTask
 import org.gradle.api.Task
+import org.gradle.api.provider.Provider
 import org.gradle.api.specs.Spec
 import org.gradle.api.tasks.TaskAction
 import wooga.gradle.fastlane.models.FastLaneTaskSpec
@@ -65,24 +66,23 @@ abstract class AbstractFastlaneTask extends DefaultTask implements FastLaneTaskS
     }
 
     void addDefaultArguments(List<String> arguments) {
-        if (username.present) {
-            arguments << "--username" << username.get()
-        }
+        addOptionalArgument(arguments, "--username", username)
+        addOptionalArgument(arguments, "--team_id", teamId)
+        addOptionalArgument(arguments, "--team_name", teamName)
+        addOptionalArgument(arguments, "--app_identifier", appIdentifier)
+        addOptionalArgument(arguments, "--api_key_path", apiKeyPath.getAsFile().map {it.path})
+        addOptionalArgument(arguments, "--api_key", apiKey)
+    }
 
-        if (teamId.present) {
-            arguments << "--team_id" << teamId.get()
+    protected static addFlag(List<String> arguments, String flagName, Provider<Boolean> flag) {
+        if(flag.present && flag.get()) {
+            arguments << flagName
         }
+    }
 
-        if (teamName.present) {
-            arguments << "--team_name" << teamName.get()
-        }
-
-        if (appIdentifier.present) {
-            arguments << "--app_identifier" << appIdentifier.get()
-        }
-
-        if (apiKeyPath.present) {
-            arguments << "--api-key-path" << apiKeyPath.get().asFile.path
+    protected static addOptionalArgument(List<String> arguments, String argumentName, Provider<String> argument) {
+        if (argument.present) {
+            arguments << argumentName << argument.get()
         }
     }
 }

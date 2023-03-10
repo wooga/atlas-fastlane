@@ -17,6 +17,7 @@
 package wooga.gradle.fastlane
 
 import com.wooga.gradle.test.BatchmodeWrapper
+import com.wooga.gradle.test.IntegrationSpec
 
 import java.nio.file.Paths
 
@@ -32,11 +33,18 @@ abstract class FastlaneIntegrationSpec extends IntegrationSpec {
     }
 
     def setup() {
+        def gradleVersion = System.getenv("GRADLE_VERSION")
+        if (gradleVersion) {
+            this.gradleVersion = gradleVersion
+            fork = true
+        }
+        environmentVariables.clear("FASTLANE_USERNAME", "FASTLANE_PASSWORD", "FASTLANE_API_KEY_PATH", "SPACESHIP_SKIP_2FA_UPGRADE", "FASTLANE_SKIP_2FA_UPGRADE")
+
         setupFastlaneMock()
-        buildFile << """
-              group = 'test'
-              ${applyPlugin(FastlanePlugin)}
-           """.stripIndent()
+    }
+
+    static wrapValueFallback = { Object rawValue, String type, Closure<String> fallback ->
+        return rawValue.toString()
     }
 
     // TODO: Replace with newer test API. subStr is an object since we invoke this for any types then discard
@@ -52,13 +60,13 @@ abstract class FastlaneIntegrationSpec extends IntegrationSpec {
         }
 
         // If it's an absolute path starting from the current volume
-        if (Paths.get(path).isAbsolute()){
+        if (Paths.get(path).isAbsolute()) {
             return expectedValue
         }
 
         def modifiedPath = typeName == "Provider<RegularFile>"
-            ? "/build/${path}"
-            : path
+                ? "/build/${path}"
+                : path
 
         expectedValue.replace(path, new File(projectDir, modifiedPath).path)
     }

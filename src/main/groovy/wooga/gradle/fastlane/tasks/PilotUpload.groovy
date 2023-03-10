@@ -44,15 +44,11 @@ class PilotUpload extends AbstractFastlaneTask implements PilotUploadSpec {
 
             addDefaultArguments(arguments)
 
-            if (devPortalTeamId.present) {
-                arguments << "--dev_portal_team_id" << devPortalTeamId.get()
-            }
-            if (itcProvider.present) {
-                arguments << "--itc_provider" << itcProvider.get()
-            }
+            addOptionalArgument(arguments, "--dev_portal_team_id", devPortalTeamId)
+            addOptionalArgument(arguments, "--itc_provider", itcProvider)
+            addFlag(arguments, "--skip_submission", skipSubmission)
+            addFlag(arguments, "--skip_waiting_for_build_processing", skipWaitingForBuildProcessing)
 
-            arguments << "--skip_submission" << (skipSubmission.present && skipSubmission.get()).toString()
-            arguments << "--skip_waiting_for_build_processing" << (skipWaitingForBuildProcessing.present && skipWaitingForBuildProcessing.get()).toString()
             arguments << "--ipa" << ipa.get().asFile.path
 
             arguments
