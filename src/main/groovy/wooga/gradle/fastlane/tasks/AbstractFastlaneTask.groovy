@@ -41,6 +41,10 @@ abstract class AbstractFastlaneTask extends DefaultTask implements FastLaneTaskS
                 environment['FASTLANE_PASSWORD'] = password.get()
             }
 
+            if (apiKey.isPresent()) {
+                environment["APP_STORE_CONNECT_API_KEY"] = apiKey.get()
+            }
+
             if (skip2faUpgrade.isPresent() && skip2faUpgrade.get()) {
                 environment["SPACESHIP_SKIP_2FA_UPGRADE"] = "1"
             }
@@ -71,7 +75,6 @@ abstract class AbstractFastlaneTask extends DefaultTask implements FastLaneTaskS
         addOptionalArgument(arguments, "--team_name", teamName)
         addOptionalArgument(arguments, "--app_identifier", appIdentifier)
         addOptionalArgument(arguments, "--api_key_path", apiKeyPath.getAsFile().map {it.path})
-        addOptionalArgument(arguments, "--api_key", apiKey)
     }
 
     protected static addFlag(List<String> arguments, String flagName, Provider<Boolean> flag) {
