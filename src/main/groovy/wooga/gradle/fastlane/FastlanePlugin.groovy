@@ -47,6 +47,7 @@ class FastlanePlugin implements Plugin<Project> {
         extension.username.convention(USERNAME_LOOKUP.getStringValueProvider(project))
         extension.password.convention(PASSWORD_LOOKUP.getStringValueProvider(project))
         extension.apiKeyPath.convention(API_KEY_PATH_LOOKUP.getFileValueProvider(project))
+        extension.apiKey.convention(API_KEY_LOOKUP.getStringValueProvider(project))
         extension.skip2faUpgrade.convention(SKIP_2FA_UPGRADE.getBooleanValueProvider(project))
         extension.executableName.convention(EXECUTABLE_NAME.getStringValueProvider(project))
         extension.executableDirectory.convention(EXECUTABLE_DIRECTORY.getDirectoryValueProvider(project))
@@ -60,8 +61,11 @@ class FastlanePlugin implements Plugin<Project> {
                 task.executableName.convention(extension.executableName)
                 task.executableDirectory.convention(extension.executableDirectory)
                 task.apiKeyPath.convention(extension.apiKeyPath)
+                task.apiKey.convention(extension.apiKey)
                 task.logToStdout.convention(true)
                 task.skip2faUpgrade.convention(extension.skip2faUpgrade)
+                task.username.convention(extension.username)
+                task.password.convention(extension.password)
             }
         })
 
@@ -70,9 +74,6 @@ class FastlanePlugin implements Plugin<Project> {
             void execute(SighRenew task) {
                 task.group = FASTLANE_GROUP
                 task.description = "runs fastlane sigh renew"
-
-                task.username.convention(extension.username)
-                task.password.convention(extension.password)
             }
         })
 
