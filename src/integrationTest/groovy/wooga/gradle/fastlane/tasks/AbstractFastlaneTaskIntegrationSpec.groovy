@@ -22,15 +22,11 @@ import com.wooga.gradle.test.PropertyQueryTaskWriter
 import com.wooga.gradle.test.TaskIntegrationSpec
 import com.wooga.gradle.test.writers.PropertyGetterTaskWriter
 import com.wooga.gradle.test.writers.PropertySetterWriter
-import org.gradle.api.DefaultTask
-import org.gradle.api.Task
 import spock.lang.Requires
 import spock.lang.Unroll
 import wooga.gradle.fastlane.FastlaneIntegrationSpec
 
-import static com.wooga.gradle.test.writers.PropertySetInvocation.getMethod
-import static com.wooga.gradle.test.writers.PropertySetInvocation.getProviderSet
-import static com.wooga.gradle.test.writers.PropertySetInvocation.getSetter
+import static com.wooga.gradle.test.writers.PropertySetInvocation.*
 
 abstract class AbstractFastlaneTaskIntegrationSpec<T extends AbstractFastlaneTask> extends FastlaneIntegrationSpec implements TaskIntegrationSpec<T> {
 
@@ -73,7 +69,6 @@ abstract class AbstractFastlaneTaskIntegrationSpec<T extends AbstractFastlaneTas
         "teamName"            | providerSet | "test"                     | "String"       || "--team_name ${rawValue}"
         "apiKeyPath"          | providerSet | "/path/to/key.json"        | "File"         || "--api_key_path ${rawValue}"
         "appIdentifier"       | providerSet | "com.test.app"             | "String"       || "--app_identifier ${rawValue}"
-        "apiKey"              | providerSet | "test"                     | "String"       || "--api_key ${rawValue}"
         "additionalArguments" | setter      | ["--verbose", "--foo bar"] | "List<String>" || "--verbose --foo bar"
         value = wrapValueBasedOnType(rawValue, type)
         valueMessage = (rawValue != _) ? "with value ${value}" : "without value"
@@ -112,25 +107,6 @@ abstract class AbstractFastlaneTaskIntegrationSpec<T extends AbstractFastlaneTas
         "apiKey"     | setter      | "name5"                        | "String"
         "apiKey"     | setter      | "name6"                        | "Provider<String>"
 
-        set = new PropertySetterWriter(subjectUnderTestName, property)
-                .set(rawValue, type)
-                .toScript(setMethod)
-                .serialize(wrapValueFallback)
-
-        get = new PropertyGetterTaskWriter(set)
-    }
-
-    @Requires({ PlatformUtils.mac })
-    @Unroll("can set property #property with #setMethod and type #type")
-    def "can set property #property with #setMethod and type #type base2"() {
-        given: "disable subject under test to no fail"
-        appendToSubjectTask("enabled=false")
-
-        expect:
-        runPropertyQuery(subjectUnderTestName, get, set).matches(rawValue)
-
-        where:
-        property              | setMethod   | rawValue                      | type
         "executableName"      | providerSet | "fastlane_3"                  | "String"
         "executableName"      | providerSet | "fastlane_4"                  | "Provider<String>"
         "executableName"      | setter      | "fastlane_5"                  | "String"
@@ -183,13 +159,6 @@ abstract class AbstractFastlaneTaskIntegrationSpec<T extends AbstractFastlaneTas
         "password"            | setter      | "1234563"                     | "String"
         "password"            | setter      | "1234564"                     | "Provider<String>"
 
-        "apiKeyPath"          | method      | "/some/path/1.json"           | "File"
-        "apiKeyPath"          | method      | "/some/path/2.json"           | "Provider<RegularFile>"
-        "apiKeyPath"          | providerSet | "/some/path/3.json"           | "File"
-        "apiKeyPath"          | providerSet | "/some/path/4.json"           | "Provider<RegularFile>"
-        "apiKeyPath"          | setter      | "/some/path/5.json"           | "File"
-        "apiKeyPath"          | setter      | "/some/path/6.json"           | "Provider<RegularFile>"
-
         set = new PropertySetterWriter(subjectUnderTestName, property)
                 .set(rawValue, type)
                 .toScript(setMethod)
@@ -215,8 +184,9 @@ abstract class AbstractFastlaneTaskIntegrationSpec<T extends AbstractFastlaneTas
         BatchmodeWrapper.containsEnvironment(result.standardOutput, expectedEnvironmentPair)
 
         where:
-        property         | setMethod            | rawValue      | type      || expectedEnvironmentPair
-        "password"       | "password.set"       | "secretValue" | "String"  || ["FASTLANE_PASSWORD": "secretValue"]
+        property   | setMethod      | rawValue                 | type     || expectedEnvironmentPair
+        "password" | "password.set" | "secretValue"            | "String" || ["FASTLANE_PASSWORD": rawValue]
+        "apiKey"   | "apiKey.set"   | '{"key": "secretValue"}' | "String" || ["APP_STORE_CONNECT_API_KEY": rawValue]
         value = wrapValueBasedOnType(rawValue, type)
         valueMessage = (rawValue != _) ? "with value ${value}" : "without value"
     }
