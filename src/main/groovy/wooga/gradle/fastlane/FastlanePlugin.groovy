@@ -30,6 +30,7 @@ import static wooga.gradle.fastlane.FastlanePluginConventions.*
 class FastlanePlugin implements Plugin<Project> {
     static final String EXTENSION_NAME = "fastlane"
     static final String FASTLANE_GROUP = "fastlane"
+    static final String UPLOAD_GROUP = "upload" //BasePlugin.UPLOAD_GROUP not present anymore on gradle >= 7,
 
     private Project project
 
@@ -80,7 +81,7 @@ class FastlanePlugin implements Plugin<Project> {
         project.tasks.withType(PilotUpload, new Action<PilotUpload>() {
             @Override
             void execute(PilotUpload task) {
-                task.group = BasePlugin.UPLOAD_GROUP
+                task.group = UPLOAD_GROUP
                 task.description = "runs fastlane pilot upload"
 
                 task.username.convention(extension.username)

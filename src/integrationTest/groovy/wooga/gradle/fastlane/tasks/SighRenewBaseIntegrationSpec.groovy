@@ -150,8 +150,8 @@ abstract class SighRenewBaseIntegrationSpec<T extends AbstractFastlaneTask> exte
     }
 
 
+    @Requires({ os.macOs })
     @Unroll("can set property #property with #setMethod and type #type")
-    @Requires({ PlatformUtils.mac })
     def "can set property SighRenew"() {
         given: "disable subject under test to no fail"
         appendToSubjectTask("enabled=false")
